@@ -5,10 +5,10 @@ push:
 branches:
 - main
 paths:
-- 'app.py'
-- 'src/**'
-- 'model_weights.pt'
-- 'requirements.txt'
+- app.py
+- src/**
+- model_weights.pt
+- requirements.txt
 
 jobs:
 deploy:
@@ -49,10 +49,7 @@ steps:
       HF_SPACE: aimethaer1/gradio-hello-world
     run: |
       set -e
-
       git remote remove huggingface || true
       git remote add huggingface "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
-
-      # Push propre (évite conflits)
       git push huggingface main --force
 ```
