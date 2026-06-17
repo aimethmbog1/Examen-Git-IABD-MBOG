@@ -16,10 +16,7 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Setup Git LFS (sécurité)
-        run: git lfs install
-
-      - name: Setup Node (évite warning futur)
+      - name: Setup Node (optionnel)
         uses: actions/setup-node@v4
         with:
           node-version: 22
