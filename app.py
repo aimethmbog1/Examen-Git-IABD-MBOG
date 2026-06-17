@@ -1,16 +1,16 @@
 import gradio as gr
 
 
-def hello():
-    return "Hello World"
+def hello(name):
+    return "Hello World"+ name + "!"
 
 
 app = gr.Interface(
     fn=hello,
-    inputs=[],
+    inputs="text",
     outputs="text",
     title="EXAM GIT",
     description="Application Gradio basique",
 )
-
-app.launch()
+if __name__ == "__main__":
+     app.launch()
