@@ -1,64 +1,63 @@
----
-"on":
-  push:
-    branches:
-      - main
-    paths:
-      - app.py
-      - src/**
-      - model_weights.pt
-      - requirements.txt
-
 name: Deploy to Hugging Face
 
+on:
+push:
+branches:
+- main
+paths:
+- app.py
+- src/**
+- model_weights.pt
+- requirements.txt
+
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+deploy:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code (avec LFS)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
+steps:
+  - name: Checkout code (avec LFS)
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+      lfs: true
 
-      - name: Ensure Git LFS is installed
-        run: git lfs install
+  - name: Ensure Git LFS is installed
+    run: git lfs install
 
-      - name: Verify LFS tracking for model weights
-        run: |
-          if [ -f model_weights.pt ]; then
-            if ! git check-attr filter model_weights.pt \
-              | grep -q "lfs"; then
-              echo "::error::model_weights.pt n'est pas tracké par LFS !"
-              exit 1
-            fi
-          fi
+  - name: Verify LFS tracking for model weights
+    run: |
+      if [ -f model_weights.pt ]; then
+        if ! git check-attr filter model_weights.pt \
+          | grep -q "lfs"; then
+          echo "::error::model_weights.pt n'est pas tracké par LFS !"
+          exit 1
+        fi
+      fi
 
-      - name: Configure Git
-        env:
-          GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
-          GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
-        run: |
-          git config --global user.email "${GIT_EMAIL}"
-          git config --global user.name "${GIT_USERNAME}"
+  - name: Configure Git
+    env:
+      GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+      GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
+    run: |
+      git config --global user.email "${GIT_EMAIL}"
+      git config --global user.name "${GIT_USERNAME}"
 
-      - name: Push to Hugging Face Space
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: ${{ secrets.HF_USERNAME }}
-          HF_SPACE: aimethaer1/gradio-hello-world
-        run: |
-          set -e
-          git remote remove huggingface || true
-          git remote add huggingface \
-            "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
+  - name: Push to Hugging Face Space
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_USERNAME: ${{ secrets.HF_USERNAME }}
+      HF_SPACE: aimethaer1/gradio-hello-world
+    run: |
+      set -e
+      git remote remove huggingface || true
+      git remote add huggingface \
+        "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
 
-          if ! git push huggingface main; then
-            echo "Push rejeté, fusion des historiques..."
-            git fetch huggingface main
-            git merge huggingface/main \
-              --allow-unrelated-histories -X ours \
-              -m "Merge HF Space history"
-            git push huggingface main
-          fi
+      if ! git push huggingface main; then
+        echo "Push rejeté, fusion des historiques..."
+        git fetch huggingface main
+        git merge huggingface/main \
+          --allow-unrelated-histories -X ours \
+          -m "Merge HF Space history"
+        git push huggingface main
+      fi
